@@ -12,42 +12,38 @@ const transport = new GrpcTransport({
 const client = new ExampleServiceClient(transport);
 
 async function main() {
+    const startHeap = getHeapUsed();
 
-    await callUnary(client);
+    for (let i = 0; i < 1000; i += 1) {
+        await callUnary(client);
+    }
 
-    await callServerStream(client);
+    transport.close();
 
-    await callClientStream(client);
+    const finishHeap = getHeapUsed();
 
-    await callBidi(client);
+    console.log({
+        startHeap,
+        finishHeap,
+        diffHeap: finishHeap - startHeap,
+    });
+}
 
+function getHeapUsed() {
+    global.gc();
+    return process.memoryUsage().heapUsed / 1024 / 1024;
 }
 
 
 async function callUnary(client: IExampleServiceClient) {
 
-    const call = client.unary({
+    await client.unary({
         question: 'whats up?',
-        pleaseDelayResponseMs: 50,
+        pleaseDelayResponseMs: 0,
         pleaseFail: FailRequest.FAIL_REQUEST_NONE,
         disableSendingExampleResponseHeaders: false,
     });
 
-    console.log(`### calling method "${call.method.name}"...`)
-
-    const headers = await call.headers;
-    console.log("got response headers: ", headers)
-
-    const response = await call.response;
-    console.log("got response message: ", response)
-
-    const status = await call.status;
-    console.log("got status: ", status)
-
-    const trailers = await call.trailers;
-    console.log("got trailers: ", trailers)
-
-    console.log();
 }
 
 

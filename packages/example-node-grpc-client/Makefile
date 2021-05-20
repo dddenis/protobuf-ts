@@ -10,7 +10,7 @@ generate:
 	npx protoc -I . --ts_out . --ts_opt client_grpc1,generate_dependencies,optimize_code_size service-example.proto
 
 run-client:
-	npx ts-node client.ts
+	node --expose-gc -r ts-node/register client.ts
 
 
 fix-build:

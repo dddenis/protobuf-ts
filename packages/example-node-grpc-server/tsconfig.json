@@ -14,7 +14,7 @@
 
     // activated for issue #94
     // svelte requires this option
-    "importsNotUsedAsValues": "error",
+    // "importsNotUsedAsValues": "error",
 
     "lib": [
       "es2017",

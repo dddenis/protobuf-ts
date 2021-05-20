@@ -12,47 +12,36 @@ const client = new ExampleServiceClient(
 
 
 async function main() {
+    const startHeap = getHeapUsed();
 
-    await callUnary(client);
+    for (let i = 0; i < 1000; i += 1) {
+        await callUnary(client);
+    }
 
-    await callServerStream(client);
+    const finishHeap = getHeapUsed();
 
-    await callClientStream(client);
+    console.log({
+        startHeap,
+        finishHeap,
+        diffHeap: finishHeap - startHeap,
+    });
+}
 
-    await callBidi(client);
-
+function getHeapUsed() {
+    global.gc();
+    return process.memoryUsage().heapUsed / 1024 / 1024;
 }
 
 
 function callUnary(client: IExampleServiceClient) {
 
-    console.log(`### calling method "unary"...`)
-
-    const call = client.unary({
+    return new Promise<void>((resolve) => client.unary({
         question: 'whats up?',
-        pleaseDelayResponseMs: 50,
+        pleaseDelayResponseMs: 0,
         pleaseFail: FailRequest.FAIL_REQUEST_NONE,
         disableSendingExampleResponseHeaders: false,
-    }, (err, value) => {
-        if (err) {
-            console.log("got err: ", err)
-        }
-        if (value) {
-            console.log("got response message: ", value)
-        }
-    });
+    }, () => resolve()));
 
-    call.on('metadata', arg1 => {
-        console.log("got response headers: ", arg1)
-    });
-
-    call.on('status', arg1 => {
-        console.log("got status: ", arg1)
-    });
-
-    return new Promise(resolve => {
-        call.on('status', () => resolve());
-    });
 }
 
 
